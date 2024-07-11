@@ -9,6 +9,9 @@ android {
     namespace = "com.mudurlu.recipebook"
     compileSdk = 34
 
+    buildFeatures {
+        viewBinding = true
+    }
     defaultConfig {
         applicationId = "com.mudurlu.recipebook"
         minSdk = 24

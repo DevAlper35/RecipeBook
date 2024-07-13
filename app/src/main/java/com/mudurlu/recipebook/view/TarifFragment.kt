@@ -81,12 +81,12 @@ class TarifFragment : Fragment() {
         val bitmapOrani : Double = width.toDouble() / height.toDouble()
 
         if (bitmapOrani > 1){
-            //Dikeyse
+            //Yatay
             width = maximumBoyut
             val kisaltilmisHeight = width / bitmapOrani
             height = kisaltilmisHeight.toInt()
         }else{
-            //Yatayse
+            //Dikey
             height = maximumBoyut
             val kisaltilmisWidth = height * bitmapOrani
             width = kisaltilmisWidth.toInt()

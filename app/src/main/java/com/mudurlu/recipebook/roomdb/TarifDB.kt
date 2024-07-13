@@ -5,7 +5,6 @@ import androidx.room.RoomDatabase
 import com.mudurlu.recipebook.model.Tarif
 
 @Database(entities = [Tarif::class], version = 1)
-
-abstract class AppDatabase : RoomDatabase() {
+abstract class TarifDB: RoomDatabase() {
     abstract fun tarifDAO() : TarifDAO
 }

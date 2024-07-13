@@ -19,10 +19,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.room.Room
 import com.google.android.material.snackbar.Snackbar
 import com.mudurlu.recipebook.R
 import com.mudurlu.recipebook.databinding.FragmentTarifBinding
 import com.mudurlu.recipebook.model.Tarif
+import com.mudurlu.recipebook.roomdb.TarifDAO
+import com.mudurlu.recipebook.roomdb.TarifDB
 import java.io.ByteArrayOutputStream
 
 
@@ -34,10 +37,15 @@ class TarifFragment : Fragment() {
     private lateinit var activityResultLauncher : ActivityResultLauncher<Intent>
     private var secilenGorsel : Uri? = null
     private var secilenBitmap : Bitmap? = null
+    private lateinit var db : TarifDB
+    private lateinit var dao : TarifDAO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         kayitBaslatici()
+
+        db = Room.databaseBuilder(requireContext(),TarifDB::class.java,"Tarifler").build()
+        dao = db.tarifDAO()
 
     }
 
@@ -106,6 +114,9 @@ class TarifFragment : Fragment() {
             val byteDizisi = outputStream.toByteArray()
 
             val tarif = Tarif(yemekAdi,yemekMalzeme,byteDizisi)
+            dao.tarifEkle(tarif)
+
+            //Threading
 
 
         }

@@ -1,7 +1,6 @@
-package com.mudurlu.recipebook
+package com.mudurlu.recipebook.view
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -21,7 +20,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import com.mudurlu.recipebook.R
 import com.mudurlu.recipebook.databinding.FragmentTarifBinding
+import com.mudurlu.recipebook.model.Tarif
+import java.io.ByteArrayOutputStream
 
 
 class TarifFragment : Fragment() {
@@ -72,8 +74,41 @@ class TarifFragment : Fragment() {
         }
     }
 
-    fun kaydet(view : View){
+    private fun kucukBitmapOlustur(kullaniciBitmap : Bitmap, maximumBoyut : Int) : Bitmap{
+        var width = kullaniciBitmap.width //Genişlik/Yatay -->300
+        var height= kullaniciBitmap.height // Yükseklik/Dikey  -->200
 
+        val bitmapOrani : Double = width.toDouble() / height.toDouble()
+
+        if (bitmapOrani > 1){
+            //Dikeyse
+            width = maximumBoyut
+            val kisaltilmisHeight = width / bitmapOrani
+            height = kisaltilmisHeight.toInt()
+        }else{
+            //Yatayse
+            height = maximumBoyut
+            val kisaltilmisWidth = height * bitmapOrani
+            width = kisaltilmisWidth.toInt()
+        }
+
+        return Bitmap.createScaledBitmap(kullaniciBitmap,width,height,true)
+        }
+
+    fun kaydet(view : View){
+        val yemekAdi = binding.editYemekAdi.text.toString()
+        val yemekMalzeme = binding.editMalzeme.text.toString()
+
+        if(secilenBitmap != null) {
+            val kucukBitmap = kucukBitmapOlustur(secilenBitmap!!, 300)
+            val outputStream = ByteArrayOutputStream()
+            kucukBitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream)
+            val byteDizisi = outputStream.toByteArray()
+
+            val tarif = Tarif(yemekAdi,yemekMalzeme,byteDizisi)
+
+
+        }
     }
 
     fun sil(view : View){
@@ -91,8 +126,7 @@ class TarifFragment : Fragment() {
                     Snackbar.make(view,"İzin Gerekli",Snackbar.LENGTH_INDEFINITE).setAction(
                         "İzin Ver",
                         View.OnClickListener {
-                            //İzin iste
-
+                            // İzin iste
                             permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
                         }).show()
                 }else{
@@ -102,7 +136,6 @@ class TarifFragment : Fragment() {
             }else{
                 val intentToGallery = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 activityResultLauncher.launch(intentToGallery)
-
             }
         }
         else {
@@ -174,6 +207,7 @@ class TarifFragment : Fragment() {
                 } else {
                     //İzin verilmedi
                     Toast.makeText(requireContext(), "İzin Verilmedi", Toast.LENGTH_LONG).show()
+                    //İzin verilmedi
                 }
             }
     }

@@ -1,4 +1,4 @@
-package com.mudurlu.recipebook
+package com.mudurlu.recipebook.view
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

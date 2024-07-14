@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -44,6 +45,7 @@ class TarifFragment : Fragment() {
 
     private val mDisposable = CompositeDisposable()
 
+    private var secilenTarif: Tarif? = null
 
     private lateinit var db : TarifDB
     private lateinit var dao : TarifDAO
@@ -79,6 +81,7 @@ class TarifFragment : Fragment() {
 
             if(bilgi.equals("yeni")){
                 //Yeni Tarif eklenecek
+                secilenTarif = null
                 binding.btnSil.isEnabled = false
                 binding.btnKaydet.isEnabled = true
                 binding.imageView.setImageResource(R.drawable.gorselekle)
@@ -86,8 +89,23 @@ class TarifFragment : Fragment() {
                 //Var olan tarif düzenlenecek
                 binding.btnSil.isEnabled = true
                 binding.btnKaydet.isEnabled = false
+                val id = TarifFragmentArgs.fromBundle(it).id
+
+                mDisposable.add(
+                    dao.tarifGetir(id)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::handleResponse)
+                )
             }
         }
+    }
+
+    private fun handleResponse(tarif : Tarif){
+        binding.editYemekAdi.setText(tarif.yemek_adi)
+        binding.editMalzeme.setText(tarif.yemek_malzemeleri)
+        binding.imageView.setImageBitmap(BitmapFactory.decodeByteArray(tarif.gorsel,0,tarif.gorsel.size))
+        secilenTarif = tarif
     }
 
     private fun kucukBitmapOlustur(kullaniciBitmap : Bitmap, maximumBoyut : Int) : Bitmap{
@@ -143,7 +161,20 @@ class TarifFragment : Fragment() {
     }
 
     fun sil(view : View){
+        if (secilenTarif != null){
+            mDisposable.add(
+                dao.tarifSil(secilenTarif!!)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::handleResponseSil))
+        }
 
+    }
+
+    private fun handleResponseSil(){
+        Toast.makeText(requireContext(),"Tarif Silindi",Toast.LENGTH_LONG).show()
+        val action = TarifFragmentDirections.actionTarifFragmentToListeFragment()
+        Navigation.findNavController(requireView()).navigate(action)
     }
 
     fun gorselSec(view : View) {
@@ -245,5 +276,6 @@ class TarifFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        mDisposable.clear()
     }
 }

@@ -19,6 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.Navigation
 import androidx.room.Room
 import com.google.android.material.snackbar.Snackbar
 import com.mudurlu.recipebook.R
@@ -26,6 +27,9 @@ import com.mudurlu.recipebook.databinding.FragmentTarifBinding
 import com.mudurlu.recipebook.model.Tarif
 import com.mudurlu.recipebook.roomdb.TarifDAO
 import com.mudurlu.recipebook.roomdb.TarifDB
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.ByteArrayOutputStream
 
 
@@ -37,6 +41,10 @@ class TarifFragment : Fragment() {
     private lateinit var activityResultLauncher : ActivityResultLauncher<Intent>
     private var secilenGorsel : Uri? = null
     private var secilenBitmap : Bitmap? = null
+
+    private val mDisposable = CompositeDisposable()
+
+
     private lateinit var db : TarifDB
     private lateinit var dao : TarifDAO
 
@@ -116,10 +124,22 @@ class TarifFragment : Fragment() {
             val tarif = Tarif(yemekAdi,yemekMalzeme,byteDizisi)
             dao.tarifEkle(tarif)
 
-            //Threading
+            //RxJava
+            mDisposable.add(
+                dao.tarifEkle(tarif)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::handleResponseEkle)
+            )
 
 
         }
+    }
+
+    private fun handleResponseEkle(){
+        Toast.makeText(requireContext(),"Tarif Eklendi",Toast.LENGTH_LONG).show()
+        val action = TarifFragmentDirections.actionTarifFragmentToListeFragment()
+        Navigation.findNavController(requireView()).navigate(action)
     }
 
     fun sil(view : View){
